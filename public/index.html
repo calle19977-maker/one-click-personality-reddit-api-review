@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reddit API Review Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 18px; line-height: 1.5; }
+    label { display: block; margin: 14px 0 4px; font-weight: 600; }
+    input, select, button { font: inherit; padding: 8px; }
+    button { cursor: pointer; margin-top: 14px; }
+    pre { background: #f5f5f5; padding: 14px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Reddit API Review Demo</h1>
+  <p>This minimal page demonstrates the user-authorized Reddit connection and read-only post-preview flow.</p>
+
+  <p><a href="/source-auth/reddit/start">Login/verify Reddit account</a></p>
+
+  <label for="account">Verified Reddit account</label>
+  <select id="account"></select>
+
+  <label for="postLimit">Amount of posts</label>
+  <select id="postLimit">
+    <option>50</option>
+    <option>100</option>
+    <option selected>150</option>
+    <option>250</option>
+    <option>500</option>
+    <option>1000</option>
+  </select>
+
+  <label for="period">Time period</label>
+  <select id="period">
+    <option value="last_7_days">Last 7 days</option>
+    <option value="last_30_days" selected>Last 30 days</option>
+    <option value="last_90_days">Last 90 days</option>
+    <option value="last_365_days">Last 365 days</option>
+    <option value="all">All available</option>
+  </select>
+
+  <label><input id="includeReplies" type="checkbox" /> Include replies/comments</label>
+  <label><input id="includeMediaCaptions" type="checkbox" /> Include media captions/descriptions where available</label>
+
+  <button id="preview">Fetch Reddit preview</button>
+
+  <h2>Response</h2>
+  <pre id="output">No request yet.</pre>
+
+  <script>
+    async function refreshAccounts() {
+      const response = await fetch('/api/source-accounts');
+      const data = await response.json();
+      const accountSelect = document.getElementById('account');
+      accountSelect.innerHTML = '';
+      for (const account of data.accounts || []) {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = `${account.displayName || account.username} (${account.provider})`;
+        accountSelect.appendChild(option);
+      }
+      if (!accountSelect.children.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No Reddit account connected yet';
+        accountSelect.appendChild(option);
+      }
+    }
+
+    document.getElementById('preview').addEventListener('click', async () => {
+      const body = {
+        accountId: document.getElementById('account').value,
+        postLimit: document.getElementById('postLimit').value,
+        period: document.getElementById('period').value,
+        includeReplies: document.getElementById('includeReplies').checked,
+        includeMediaCaptions: document.getElementById('includeMediaCaptions').checked
+      };
+      const response = await fetch('/api/reddit/fetch-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      document.getElementById('output').textContent = JSON.stringify(await response.json(), null, 2);
+    });
+
+    refreshAccounts();
+  </script>
+</body>
+</html>
