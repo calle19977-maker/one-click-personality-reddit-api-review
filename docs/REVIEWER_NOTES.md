@@ -8,6 +8,6 @@ The Reddit integration is server-side. Browser code never receives Reddit OAuth 
 
 ## GitHub repository URL
 
-https://github.com/calle19977-maker/one-click-personality-reddit-api-review. 
+https://github.com/calle19977-maker/one-click-personality-reddit-api-review
 
 No public staging URL yet.
